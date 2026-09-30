@@ -1,0 +1,3 @@
+package co.edu.cinematch.core.repository;
+import co.edu.cinematch.core.model.Identifiable; import java.util.*; import java.util.concurrent.*;
+public class InMemoryRepository<T extends Identifiable> implements Repository<T> { private final ConcurrentMap<String,T> data=new ConcurrentHashMap<>(); public T save(T entity){if(entity.getId()==null||entity.getId().trim().isEmpty())entity.setId(UUID.randomUUID().toString());data.put(entity.getId(),entity);return entity;}public Optional<T> findById(String id){return Optional.ofNullable(data.get(id));}public List<T> findAll(){return new ArrayList<>(data.values());}public boolean deleteById(String id){return data.remove(id)!=null;} }
