@@ -1,5 +1,6 @@
 package co.edu.cinematch.core.service;
 
+import co.edu.cinematch.core.exception.ResourceNotFoundException;
 import co.edu.cinematch.core.exception.ValidationException;
 import co.edu.cinematch.core.model.EstadoReserva;
 import co.edu.cinematch.core.model.Pago;
@@ -7,6 +8,7 @@ import co.edu.cinematch.core.model.Reserva;
 import co.edu.cinematch.core.repository.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PagoService {
 
@@ -31,5 +33,14 @@ public class PagoService {
                 LocalDateTime.now(), "APROBADO");
         reserva.setEstado(EstadoReserva.PAGADA);
         return repo.save(pago);
+    }
+
+    public Pago buscar(String id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago", id));
+    }
+
+    public List<Pago> listar() {
+        return repo.findAll();
     }
 }

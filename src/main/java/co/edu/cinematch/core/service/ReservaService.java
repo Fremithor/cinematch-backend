@@ -79,6 +79,10 @@ public class ReservaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reserva", id));
     }
 
+    public List<Reserva> listar() {
+        return repo.findAll();
+    }
+
     public List<Reserva> porCliente(String clienteId) {
         auth.buscar(clienteId);
         List<Reserva> resultado = new ArrayList<>();
