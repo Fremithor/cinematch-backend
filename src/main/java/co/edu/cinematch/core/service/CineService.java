@@ -37,6 +37,7 @@ public class CineService {
     public Cine actualizarCine(String id, Cine datos) {
         validarCine(datos);
         Cine cine = buscarCine(id);
+        cine.setCadena(datos.getCadena());
         cine.setNombre(datos.getNombre());
         cine.setDireccion(datos.getDireccion());
         cine.setCiudad(datos.getCiudad());
