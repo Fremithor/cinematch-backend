@@ -1,8 +1,14 @@
-# CineMatch Backend Core
+# CineMatch Backend (Spring Boot)
 
-Módulo de dominio extraído del proyecto Swing de CineMatch. No contiene controladores HTTP, DTOs ni base de datos: una futura API REST lo puede consumir como dependencia.
+Microservicio de negocio de CineMatch. Expone la lógica del dominio mediante una API REST en el puerto `8081`; la API Gateway de Django consume estos endpoints por HTTP.
 
-Los datos se almacenan en memoria usando repositorios thread-safe y se pierden al apagar la aplicación. Los identificadores son UUID (`String`).
+## Ejecutar
+
+En Windows: `./mvnw.cmd spring-boot:run`.
+
+Puedes comprobarlo directamente con `GET http://127.0.0.1:8081/api/peliculas` o a través de la API Django en `http://127.0.0.1:8000/api/peliculas`.
+
+Los datos se almacenan en memoria usando repositorios thread-safe y se reinician al apagar la aplicación. Los identificadores son UUID (`String`).
 
 ## Alcance migrado
 
