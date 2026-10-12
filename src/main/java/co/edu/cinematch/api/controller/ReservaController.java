@@ -3,6 +3,7 @@ package co.edu.cinematch.api.controller;
 import co.edu.cinematch.core.CineMatchBackend;
 import co.edu.cinematch.core.exception.ResourceNotFoundException;
 import co.edu.cinematch.core.model.Asiento;
+import co.edu.cinematch.core.model.EstadoReserva;
 import co.edu.cinematch.core.model.Reserva;
 import co.edu.cinematch.api.service.VistaMapper;
 import java.util.List;
@@ -39,7 +40,13 @@ public class ReservaController {
     public List<Map<String, Object>> listar(@PathVariable String correo) {
         var cliente = backend.auth.listar().stream().filter(u -> u.getEmail().equalsIgnoreCase(correo)).findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente", correo));
-        return backend.reservas.porCliente(cliente.getId()).stream().map(this::vista).toList();
+        // Una reserva solo se vuelve visible para el cliente cuando Django
+        // confirma el pago mediante el webhook. Las reservas PENDIENTE o
+        // CANCELADA son intentos incompletos y no pertenecen al historial.
+        return backend.reservas.porCliente(cliente.getId()).stream()
+                .filter(reserva -> reserva.getEstado() == EstadoReserva.PAGADA)
+                .map(this::vista)
+                .toList();
     }
 
     @DeleteMapping("/reservas/{id}")
