@@ -67,9 +67,9 @@ public class CoreConfig {
     }
 
     private Cine cine(CineMatchBackend backend, String cadena, String nombre, String direccion) {
-        Cine cine = backend.cines.crearCine(new Cine(nombre, direccion, "Ibagué"));
+        Cine cine = new Cine(nombre, direccion, "Ibagué");
         cine.setCadena(cadena);
-        return cine;
+        return backend.cines.crearCine(cine);
     }
 
     private Sala sala(CineMatchBackend backend, Cine cine, String nombre, int capacidad, String tipo) {

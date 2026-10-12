@@ -25,8 +25,8 @@ class CineMatchBackendTest {
         Usuario cliente = backend.auth.registrar(
                 new Usuario("Ana", "ana@cine.com", "Clave123", "3001234567", Rol.CLIENTE));
         Pelicula pelicula = backend.peliculas.crear(
-                new Pelicula("Película", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), null));
-        Cine cine = backend.cines.crearCine(new Cine("Cine", "Calle 1", "Ibagué"));
+                new Pelicula("Película", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), "https://example.com/pelicula.jpg"));
+        Cine cine = crearCine(backend);
         Sala sala = backend.cines.crearSala(cine.getId(), new Sala(null, "Sala 1", 5, "2D"));
         Funcion funcion = backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
                 LocalDate.now(), LocalTime.of(10, 0), LocalTime.of(12, 0), 20_000, "2D"));
@@ -42,8 +42,8 @@ class CineMatchBackendTest {
     void eliminarCineEliminaSusSalasYFunciones() {
         CineMatchBackend backend = new CineMatchBackend();
         Pelicula pelicula = backend.peliculas.crear(
-                new Pelicula("Película", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), null));
-        Cine cine = backend.cines.crearCine(new Cine("Cine", "Calle 1", "Ibagué"));
+                new Pelicula("Película", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), "https://example.com/pelicula.jpg"));
+        Cine cine = crearCine(backend);
         Sala sala = backend.cines.crearSala(cine.getId(), new Sala(null, "Sala 1", 5, "2D"));
         Funcion funcion = backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
                 LocalDate.now(), LocalTime.of(10, 0), LocalTime.of(12, 0), 20_000, "2D"));
@@ -58,16 +58,16 @@ class CineMatchBackendTest {
     void impideTitulosUsuariosYHorariosDuplicados() {
         CineMatchBackend backend = new CineMatchBackend();
         Pelicula pelicula = backend.peliculas.crear(
-                new Pelicula("Interestelar", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), null));
+                new Pelicula("Interestelar", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), "https://example.com/pelicula.jpg"));
 
         assertThrows(ValidationException.class, () -> backend.peliculas.crear(
-                new Pelicula(" interestelar ", "Otra", 100, "Drama", "PG", "Español", LocalDate.now(), null)));
+                new Pelicula(" interestelar ", "Otra", 100, "Drama", "PG", "Español", LocalDate.now(), "https://example.com/otra.jpg")));
 
         backend.auth.registrar(new Usuario("Ana", "ana@cine.com", "Clave123", "3001234567", Rol.CLIENTE));
         assertThrows(ValidationException.class, () -> backend.auth.registrar(
                 new Usuario("Otra Ana", "ANA@CINE.COM", "Clave123", "3007654321", Rol.CLIENTE)));
 
-        Cine cine = backend.cines.crearCine(new Cine("Cine", "Calle 1", "Ibagué"));
+        Cine cine = crearCine(backend);
         Sala sala = backend.cines.crearSala(cine.getId(), new Sala(null, "Sala 1", 5, "2D"));
         backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
                 LocalDate.now(), LocalTime.of(10, 0), LocalTime.of(12, 0), 20_000, "2D"));
@@ -78,5 +78,15 @@ class CineMatchBackendTest {
 
         backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
                 LocalDate.now(), LocalTime.of(12, 0), LocalTime.of(14, 0), 20_000, "2D"));
+
+        assertThrows(ValidationException.class, () -> backend.funciones.crear(
+                new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
+                        LocalDate.now(), LocalTime.of(14, 0), LocalTime.of(15, 0), 20_000, "2D")));
+    }
+
+    private Cine crearCine(CineMatchBackend backend) {
+        Cine cine = new Cine("Cine", "Calle 1", "Ibagué");
+        cine.setCadena("CineMatch");
+        return backend.cines.crearCine(cine);
     }
 }

@@ -47,8 +47,13 @@ public class PeliculaService {
     private void validar(Pelicula pelicula, String idActual) {
         if (pelicula == null) throw new ValidationException("La película no puede ser nula.");
         if (blank(pelicula.getTitulo())) throw new ValidationException("El título de la película es obligatorio.");
+        if (blank(pelicula.getSinopsis())) throw new ValidationException("La sinopsis de la película es obligatoria.");
         if (pelicula.getDuracion() <= 0) throw new ValidationException("La duración debe ser mayor a 0 minutos.");
         if (blank(pelicula.getGenero())) throw new ValidationException("El género es obligatorio.");
+        if (blank(pelicula.getClasificacion())) throw new ValidationException("La clasificación es obligatoria.");
+        if (blank(pelicula.getIdioma())) throw new ValidationException("El idioma es obligatorio.");
+        if (pelicula.getFechaEstreno() == null) throw new ValidationException("La fecha de estreno es obligatoria.");
+        if (blank(pelicula.getRutaImagen())) throw new ValidationException("La URL del póster es obligatoria.");
         String tituloNormalizado = pelicula.getTitulo().trim();
         for (Pelicula existente : repo.findAll()) {
             if (existente.getId().equals(idActual)) continue;

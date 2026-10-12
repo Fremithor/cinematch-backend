@@ -103,6 +103,8 @@ public class CineService {
 
     private void validarCine(Cine cine, String idActual) {
         if (cine == null || vacio(cine.getNombre())) throw new ValidationException("El nombre del cine es obligatorio.");
+        if (vacio(cine.getCadena())) throw new ValidationException("La cadena del cine es obligatoria.");
+        if (vacio(cine.getDireccion())) throw new ValidationException("La dirección del cine es obligatoria.");
         if (vacio(cine.getCiudad())) throw new ValidationException("La ciudad es obligatoria.");
         for (Cine existente : cines.findAll()) {
             if (existente.getId().equals(idActual)) continue;
@@ -116,6 +118,7 @@ public class CineService {
     private void validarSala(Sala sala, String cineId, String idActual) {
         if (sala == null || vacio(sala.getNombre())) throw new ValidationException("El nombre de la sala es obligatorio.");
         if (sala.getCapacidad() <= 0) throw new ValidationException("La capacidad debe ser mayor a 0.");
+        if (vacio(sala.getTipo())) throw new ValidationException("El tipo de la sala es obligatorio.");
         for (Sala existente : salas.findAll()) {
             if (existente.getId().equals(idActual)) continue;
             if (cineId.equals(existente.getCineId())

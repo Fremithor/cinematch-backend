@@ -6,6 +6,7 @@ import co.edu.cinematch.api.model.Cine;
 import co.edu.cinematch.api.model.Sala;
 import co.edu.cinematch.api.service.VistaMapper;
 import co.edu.cinematch.core.CineMatchBackend;
+import co.edu.cinematch.core.exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ public class CineController {
     @PutMapping("/{id}") public Cine actualizar(@PathVariable String id, @RequestBody Cine cine) { return guardar(id, cine); }
     @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) public void eliminar(@PathVariable String id) { backend.cines.eliminarCine(id); }
     private Cine guardar(String id, Cine datos) {
+        validarSalas(datos.getSalas());
         co.edu.cinematch.core.model.Cine dominio = new co.edu.cinematch.core.model.Cine(datos.getNombre(), datos.getDireccion(), datos.getCiudad());
         dominio.setCadena(datos.getCadena());
         co.edu.cinematch.core.model.Cine guardado = id == null ? backend.cines.crearCine(dominio) : backend.cines.actualizarCine(id, dominio);
@@ -44,6 +46,27 @@ public class CineController {
             if (!idsRecibidos.contains(salaActual.getId())) backend.cines.eliminarSala(salaActual.getId());
         }
         return mapper.cine(guardado);
+    }
+
+    private void validarSalas(List<Sala> salas) {
+        if (salas == null || salas.isEmpty()) {
+            throw new ValidationException("El cine debe tener al menos una sala.");
+        }
+        Set<String> nombres = new java.util.HashSet<>();
+        for (Sala sala : salas) {
+            if (sala == null || sala.getNombre() == null || sala.getNombre().isBlank()) {
+                throw new ValidationException("El nombre de cada sala es obligatorio.");
+            }
+            if (sala.getCapacidad() <= 0) {
+                throw new ValidationException("La capacidad de cada sala debe ser mayor a 0.");
+            }
+            if (sala.getTipo() == null || sala.getTipo().isBlank()) {
+                throw new ValidationException("El tipo de cada sala es obligatorio.");
+            }
+            if (!nombres.add(sala.getNombre().trim().toLowerCase())) {
+                throw new ValidationException("No pueden existir dos salas con el mismo nombre en un cine.");
+            }
+        }
     }
 }
 
