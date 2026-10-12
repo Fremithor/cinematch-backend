@@ -42,6 +42,12 @@ public class ReservaController {
         return backend.reservas.porCliente(cliente.getId()).stream().map(this::vista).toList();
     }
 
+    @DeleteMapping("/reservas/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelar(@PathVariable String id) {
+        backend.reservas.cancelar(id);
+    }
+
     private Map<String, Object> vista(Reserva reserva) {
         var funcion = backend.funciones.buscar(reserva.getFuncionId());
         var pelicula = backend.peliculas.buscar(funcion.getPeliculaId());
