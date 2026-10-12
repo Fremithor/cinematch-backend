@@ -22,6 +22,12 @@ public class PagoService {
 
     public Pago procesar(String reservaId, String metodoPago) {
         Reserva reserva = reservas.buscar(reservaId);
+        return confirmar(reservaId, metodoPago, reserva.getTotal(), "APROBADO");
+    }
+
+    /** Registra el resultado recibido desde Django; el webhook es idempotente por reserva. */
+    public Pago confirmar(String reservaId, String metodoPago, double monto, String estado) {
+        Reserva reserva = reservas.buscar(reservaId);
         if (reserva.getDetalles().isEmpty()) {
             throw new ValidationException("La reserva debe tener al menos un asiento.");
         }
@@ -29,9 +35,14 @@ public class PagoService {
             throw new ValidationException("El método de pago es obligatorio.");
         }
 
-        Pago pago = new Pago(reservaId, metodoPago, reserva.getTotal(),
-                LocalDateTime.now(), "APROBADO");
-        reserva.setEstado(EstadoReserva.PAGADA);
+        if (monto != reserva.getTotal()) {
+            throw new ValidationException("El monto confirmado no coincide con el total de la reserva.");
+        }
+        for (Pago existente : repo.findAll()) {
+            if (reservaId.equals(existente.getReservaId())) return existente;
+        }
+        Pago pago = new Pago(reservaId, metodoPago, monto, LocalDateTime.now(), estado);
+        if ("APROBADO".equalsIgnoreCase(estado)) reserva.setEstado(EstadoReserva.PAGADA);
         return repo.save(pago);
     }
 

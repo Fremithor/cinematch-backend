@@ -32,7 +32,6 @@ public class ReservaController {
         Reserva reserva = backend.reservas.crear(cliente.getId(), funcionId);
         Object seleccion = datos.get("asientos");
         if (seleccion instanceof List<?> ids) for (Object id : ids) backend.reservas.agregarAsiento(reserva.getId(), String.valueOf(id));
-        backend.reservas.confirmar(reserva.getId());
         return vista(reserva);
     }
 

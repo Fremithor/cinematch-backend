@@ -1,5 +1,6 @@
 package co.edu.cinematch.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import co.edu.cinematch.core.CineMatchBackend;
 import co.edu.cinematch.core.model.Cine;
 import co.edu.cinematch.core.model.Funcion;
@@ -14,6 +15,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class CoreConfig {
+    @Bean
+    ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
     @Bean
     CineMatchBackend cineMatchBackend() {
         CineMatchBackend backend = new CineMatchBackend();

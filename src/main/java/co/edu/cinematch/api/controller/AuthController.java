@@ -20,8 +20,14 @@ public class AuthController {
         Usuario usuario = backend.auth.registrar(new Usuario(datos.get("nombre"), correo(datos), clave(datos), datos.get("telefono"), Rol.CLIENTE));
         return sesion(usuario);
     }
-    @PostMapping({"/api/clientes/login", "/api/auth/login"})
-    public Map<String, String> login(@RequestBody Map<String, String> datos) { return sesion(backend.auth.iniciarSesion(correo(datos), clave(datos))); }
+    @PostMapping("/api/auth/login")
+    public Map<String, String> loginAdministrador(@RequestBody Map<String, String> datos) {
+        return sesion(exigirRol(backend.auth.iniciarSesion(correo(datos), clave(datos)), Rol.ADMINISTRADOR));
+    }
+    @PostMapping("/api/clientes/login")
+    public Map<String, String> loginCliente(@RequestBody Map<String, String> datos) {
+        return sesion(exigirRol(backend.auth.iniciarSesion(correo(datos), clave(datos)), Rol.CLIENTE));
+    }
     @PutMapping({"/api/clientes/perfil", "/api/auth/perfil"})
     public Map<String, String> perfil(@RequestBody Map<String, String> datos) {
         Usuario usuario = buscarCorreo(correo(datos));
@@ -30,6 +36,10 @@ public class AuthController {
         return sesion(backend.auth.actualizarPerfil(usuario.getId(), datos.get("nombre"), datos.get("telefono"), nueva == null || nueva.isBlank() ? usuario.getPassword() : nueva));
     }
     private Usuario buscarCorreo(String correo) { return backend.auth.listar().stream().filter(u -> u.getEmail().equalsIgnoreCase(correo)).findFirst().orElseThrow(() -> new ResourceNotFoundException("Usuario", correo)); }
+    private Usuario exigirRol(Usuario usuario, Rol rol) {
+        if (usuario.getRol() != rol) throw new AuthenticationException("No tienes permisos para iniciar sesión en este módulo.");
+        return usuario;
+    }
     private String correo(Map<String, String> datos) { return datos.getOrDefault("correo", datos.get("email")); }
     private String clave(Map<String, String> datos) { return datos.getOrDefault("contrasena", datos.get("password")); }
     private Map<String, String> sesion(Usuario u) { return Map.of("token", UUID.randomUUID().toString(), "nombre", u.getNombre(), "correo", u.getEmail(), "telefono", u.getTelefono(), "rol", u.getRol().name()); }
