@@ -1,6 +1,7 @@
 package co.edu.cinematch.core;
 
 import co.edu.cinematch.core.exception.ResourceNotFoundException;
+import co.edu.cinematch.core.exception.ValidationException;
 import co.edu.cinematch.core.model.Cine;
 import co.edu.cinematch.core.model.Funcion;
 import co.edu.cinematch.core.model.Pelicula;
@@ -51,5 +52,31 @@ class CineMatchBackendTest {
 
         assertThrows(ResourceNotFoundException.class, () -> backend.cines.buscarSala(sala.getId()));
         assertThrows(ResourceNotFoundException.class, () -> backend.funciones.buscar(funcion.getId()));
+    }
+
+    @Test
+    void impideTitulosUsuariosYHorariosDuplicados() {
+        CineMatchBackend backend = new CineMatchBackend();
+        Pelicula pelicula = backend.peliculas.crear(
+                new Pelicula("Interestelar", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), null));
+
+        assertThrows(ValidationException.class, () -> backend.peliculas.crear(
+                new Pelicula(" interestelar ", "Otra", 100, "Drama", "PG", "Español", LocalDate.now(), null)));
+
+        backend.auth.registrar(new Usuario("Ana", "ana@cine.com", "Clave123", "3001234567", Rol.CLIENTE));
+        assertThrows(ValidationException.class, () -> backend.auth.registrar(
+                new Usuario("Otra Ana", "ANA@CINE.COM", "Clave123", "3007654321", Rol.CLIENTE)));
+
+        Cine cine = backend.cines.crearCine(new Cine("Cine", "Calle 1", "Ibagué"));
+        Sala sala = backend.cines.crearSala(cine.getId(), new Sala(null, "Sala 1", 5, "2D"));
+        backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
+                LocalDate.now(), LocalTime.of(10, 0), LocalTime.of(12, 0), 20_000, "2D"));
+
+        assertThrows(ValidationException.class, () -> backend.funciones.crear(
+                new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
+                        LocalDate.now(), LocalTime.of(11, 0), LocalTime.of(13, 0), 20_000, "2D")));
+
+        backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
+                LocalDate.now(), LocalTime.of(12, 0), LocalTime.of(14, 0), 20_000, "2D"));
     }
 }

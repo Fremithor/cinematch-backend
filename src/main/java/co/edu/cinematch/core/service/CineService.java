@@ -24,7 +24,7 @@ public class CineService {
     }
 
     public Cine crearCine(Cine cine) {
-        validarCine(cine);
+        validarCine(cine, null);
         return cines.save(cine);
     }
 
@@ -35,7 +35,7 @@ public class CineService {
     }
 
     public Cine actualizarCine(String id, Cine datos) {
-        validarCine(datos);
+        validarCine(datos, id);
         Cine cine = buscarCine(id);
         cine.setCadena(datos.getCadena());
         cine.setNombre(datos.getNombre());
@@ -52,7 +52,7 @@ public class CineService {
 
     public Sala crearSala(String cineId, Sala sala) {
         buscarCine(cineId);
-        validarSala(sala);
+        validarSala(sala, cineId, null);
         sala.setCineId(cineId);
         Sala creada = salas.save(sala);
         for (int posicion = 1; posicion <= creada.getCapacidad(); posicion++) {
@@ -75,8 +75,8 @@ public class CineService {
     }
 
     public Sala actualizarSala(String id, Sala datos) {
-        validarSala(datos);
         Sala sala = buscarSala(id);
+        validarSala(datos, sala.getCineId(), id);
         sala.setNombre(datos.getNombre());
         sala.setCapacidad(datos.getCapacidad());
         sala.setTipo(datos.getTipo());
@@ -101,14 +101,28 @@ public class CineService {
         return asientos.findById(id).orElseThrow(() -> new ResourceNotFoundException("Asiento", id));
     }
 
-    private void validarCine(Cine cine) {
+    private void validarCine(Cine cine, String idActual) {
         if (cine == null || vacio(cine.getNombre())) throw new ValidationException("El nombre del cine es obligatorio.");
         if (vacio(cine.getCiudad())) throw new ValidationException("La ciudad es obligatoria.");
+        for (Cine existente : cines.findAll()) {
+            if (existente.getId().equals(idActual)) continue;
+            if (existente.getNombre().trim().equalsIgnoreCase(cine.getNombre().trim())
+                    && existente.getCiudad().trim().equalsIgnoreCase(cine.getCiudad().trim())) {
+                throw new ValidationException("Ya existe un cine registrado con ese nombre en la ciudad.");
+            }
+        }
     }
 
-    private void validarSala(Sala sala) {
+    private void validarSala(Sala sala, String cineId, String idActual) {
         if (sala == null || vacio(sala.getNombre())) throw new ValidationException("El nombre de la sala es obligatorio.");
         if (sala.getCapacidad() <= 0) throw new ValidationException("La capacidad debe ser mayor a 0.");
+        for (Sala existente : salas.findAll()) {
+            if (existente.getId().equals(idActual)) continue;
+            if (cineId.equals(existente.getCineId())
+                    && existente.getNombre().trim().equalsIgnoreCase(sala.getNombre().trim())) {
+                throw new ValidationException("Ya existe una sala con ese nombre en este cine.");
+            }
+        }
     }
 
     private boolean vacio(String valor) { return valor == null || valor.trim().isEmpty(); }
