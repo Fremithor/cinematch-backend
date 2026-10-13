@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FuncionService {
+    /** Bloque estándar de anuncios y tráilers incluido en cada función. */
+    public static final int MINUTOS_PREVIO_FUNCION = 15;
     private final Repository<Funcion> repo;
     private final PeliculaService peliculas;
     private final CineService cines;
@@ -87,13 +89,15 @@ public class FuncionService {
         // La duración no se decide manualmente: una función termina justo al
         // completar los minutos de la película seleccionada. Así la API
         // tampoco acepta horarios manipulados fuera del formulario web.
-        var horaEsperada = funcion.getHoraInicio().plusMinutes(pelicula.getDuracion());
+        var horaEsperada = funcion.getHoraInicio()
+                .plusMinutes(pelicula.getDuracion() + MINUTOS_PREVIO_FUNCION);
         if (!horaEsperada.isAfter(funcion.getHoraInicio())) {
             throw new ValidationException("La función no puede terminar al día siguiente.");
         }
         if (!funcion.getHoraFin().equals(horaEsperada)) {
-            throw new ValidationException("La hora de fin debe ser " + horaEsperada
-                    + " según la duración de " + pelicula.getDuracion() + " minutos.");
+            throw new ValidationException("La hora de fin debe ser " + horaEsperada + ": "
+                    + pelicula.getDuracion() + " min de película + " + MINUTOS_PREVIO_FUNCION
+                    + " min de anuncios y tráilers.");
         }
 
         for (Funcion existente : repo.findAll()) {
