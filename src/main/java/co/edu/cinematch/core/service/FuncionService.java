@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FuncionService {
+    /** Bloque estándar de anuncios y tráilers incluido en cada función. */
+    public static final int MINUTOS_PREVIO_FUNCION = 15;
     private final Repository<Funcion> repo;
     private final PeliculaService peliculas;
     private final CineService cines;
@@ -67,13 +69,36 @@ public class FuncionService {
         if (funcion.getSalaId() == null || funcion.getSalaId().isBlank()) {
             throw new ValidationException("La sala es obligatoria.");
         }
+        if (funcion.getTipoFuncion() == null || funcion.getTipoFuncion().isBlank()) {
+            throw new ValidationException("El tipo de función es obligatorio.");
+        }
+        if (funcion.getFormato() == null || funcion.getFormato().isBlank()) {
+            throw new ValidationException("El formato de la función es obligatorio.");
+        }
         if (funcion.getPrecio() <= 0) throw new ValidationException("El precio debe ser mayor a 0.");
         if (funcion.getHoraInicio() == null || funcion.getHoraFin() == null
                 || !funcion.getHoraFin().isAfter(funcion.getHoraInicio())) {
             throw new ValidationException("La hora de fin debe ser posterior a la hora de inicio.");
         }
-        peliculas.buscar(funcion.getPeliculaId());
-        cines.buscarSala(funcion.getSalaId());
+        var pelicula = peliculas.buscar(funcion.getPeliculaId());
+        var sala = cines.buscarSala(funcion.getSalaId());
+        if (!sala.getTipo().equalsIgnoreCase(funcion.getFormato())) {
+            throw new ValidationException("El formato debe coincidir con el tipo de la sala.");
+        }
+
+        // La duración no se decide manualmente: una función termina justo al
+        // completar los minutos de la película seleccionada. Así la API
+        // tampoco acepta horarios manipulados fuera del formulario web.
+        var horaEsperada = funcion.getHoraInicio()
+                .plusMinutes(pelicula.getDuracion() + MINUTOS_PREVIO_FUNCION);
+        if (!horaEsperada.isAfter(funcion.getHoraInicio())) {
+            throw new ValidationException("La función no puede terminar al día siguiente.");
+        }
+        if (!funcion.getHoraFin().equals(horaEsperada)) {
+            throw new ValidationException("La hora de fin debe ser " + horaEsperada + ": "
+                    + pelicula.getDuracion() + " min de película + " + MINUTOS_PREVIO_FUNCION
+                    + " min de anuncios y tráilers.");
+        }
 
         for (Funcion existente : repo.findAll()) {
             if (existente.getId().equals(idActual)) continue;

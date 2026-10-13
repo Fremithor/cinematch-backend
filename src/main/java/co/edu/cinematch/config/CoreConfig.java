@@ -10,6 +10,7 @@ import co.edu.cinematch.core.model.Pelicula;
 import co.edu.cinematch.core.model.Rol;
 import co.edu.cinematch.core.model.Sala;
 import co.edu.cinematch.core.model.Usuario;
+import co.edu.cinematch.core.service.FuncionService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import org.springframework.context.annotation.Bean;
@@ -59,13 +60,13 @@ public class CoreConfig {
         Sala estacionTresD = sala(backend, estacion, "Sala 2", 26, "3D");
 
         LocalDate hoy = LocalDate.now();
-        funcion(backend, duna, centroTresD, hoy, 15, 0, 17, 46, 22_000, "3D");
-        funcion(backend, duna, multiDosD, hoy, 16, 0, 18, 46, 19_000, "2D");
-        funcion(backend, duna, estacionTresD, hoy.plusDays(1), 18, 0, 20, 46, 21_000, "3D");
-        funcion(backend, spiderman, centroDosD, hoy, 14, 30, 16, 50, 16_000, "2D");
-        funcion(backend, oppenheimer, multiVip, hoy.plusDays(1), 19, 0, 22, 0, 28_000, "VIP");
-        funcion(backend, wonka, estacionDosD, hoy, 13, 0, 14, 56, 15_000, "2D");
-        funcion(backend, garza, centroDosD, hoy.plusDays(1), 11, 0, 13, 4, 14_000, "2D");
+        funcion(backend, duna, centroTresD, hoy, 15, 0, 22_000, "3D");
+        funcion(backend, duna, multiDosD, hoy, 16, 0, 19_000, "2D");
+        funcion(backend, duna, estacionTresD, hoy.plusDays(1), 18, 0, 21_000, "3D");
+        funcion(backend, spiderman, centroDosD, hoy, 14, 30, 16_000, "2D");
+        funcion(backend, oppenheimer, multiVip, hoy.plusDays(1), 19, 0, 28_000, "VIP");
+        funcion(backend, wonka, estacionDosD, hoy, 13, 0, 15_000, "2D");
+        funcion(backend, garza, centroDosD, hoy.plusDays(1), 11, 0, 14_000, "2D");
         return backend;
     }
 
@@ -86,9 +87,9 @@ private Pelicula pelicula(CineMatchBackend backend, String titulo, String sinops
     );
 }
     private Cine cine(CineMatchBackend backend, String cadena, String nombre, String direccion) {
-        Cine cine = backend.cines.crearCine(new Cine(nombre, direccion, "Ibagué"));
+        Cine cine = new Cine(nombre, direccion, "Ibagué");
         cine.setCadena(cadena);
-        return cine;
+        return backend.cines.crearCine(cine);
     }
 
     private Sala sala(CineMatchBackend backend, Cine cine, String nombre, int capacidad, String tipo) {
@@ -96,8 +97,9 @@ private Pelicula pelicula(CineMatchBackend backend, String titulo, String sinops
     }
 
     private void funcion(CineMatchBackend backend, Pelicula pelicula, Sala sala, LocalDate fecha,
-                         int inicioHora, int inicioMinuto, int finHora, int finMinuto, double precio, String formato) {
+                         int inicioHora, int inicioMinuto, double precio, String formato) {
+        LocalTime inicio = LocalTime.of(inicioHora, inicioMinuto);
         backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "Doblada", fecha,
-                LocalTime.of(inicioHora, inicioMinuto), LocalTime.of(finHora, finMinuto), precio, formato));
+                inicio, inicio.plusMinutes(pelicula.getDuracion() + FuncionService.MINUTOS_PREVIO_FUNCION), precio, formato));
     }
 }
