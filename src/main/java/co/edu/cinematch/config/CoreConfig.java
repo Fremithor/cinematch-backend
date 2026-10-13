@@ -32,12 +32,21 @@ public class CoreConfig {
 
         // Datos de demostración. Se crean al iniciar porque el proyecto usa
         // repositorios en memoria; Interestelar no forma parte de la muestra.
-        Pelicula duna = pelicula(backend, "Duna: Parte Dos", "Paul Atreides une fuerzas con Chani para enfrentar a quienes destruyeron a su familia.", 166, "Ciencia ficción", "PG-13", "2024-02-29", "duna-parte-dos");
-        Pelicula spiderman = pelicula(backend, "Spider-Man: A Través del Spider-Verso", "Miles Morales emprende una aventura por el multiverso junto a nuevos Spider-People.", 140, "Animación", "PG", "2023-06-01", "spider-verse");
-        Pelicula oppenheimer = pelicula(backend, "Oppenheimer", "La historia del físico que lideró el desarrollo de la bomba atómica.", 180, "Drama", "R", "2023-07-20", "oppenheimer");
-        Pelicula wonka = pelicula(backend, "Wonka", "Los primeros años del famoso inventor y chocolatero Willy Wonka.", 116, "Familiar", "PG", "2023-12-07", "wonka");
-        Pelicula garza = pelicula(backend, "El niño y la garza", "Un joven descubre un mundo fantástico guiado por una garza parlante.", 124, "Animación", "PG", "2023-12-07", "el-nino-y-la-garza");
 
+    Pelicula duna = pelicula(backend, "Duna: Parte Dos", "Paul Atreides une fuerzas con Chani para enfrentar a quienes destruyeron a su familia.", 166, "Ciencia ficción", "PG-13", "2024-02-29",
+        "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg");
+
+    Pelicula spiderman = pelicula(backend, "Spider-Man: A Través del Spider-Verso", "Miles Morales emprende una aventura por el multiverso junto a nuevos Spider-People.", 140, "Animación", "PG", "2023-06-01",
+        "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg");
+
+    Pelicula oppenheimer = pelicula(backend, "Oppenheimer", "La historia del físico que lideró el desarrollo de la bomba atómica.", 180, "Drama", "R", "2023-07-20",
+        "https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg");
+
+    Pelicula wonka = pelicula(backend, "Wonka", "Los primeros años del famoso inventor y chocolatero Willy Wonka.", 116, "Familiar", "PG", "2023-12-07",
+        "https://image.tmdb.org/t/p/w500/qhb1qOilapbapxWQn9jtRCMwXJF.jpg");
+
+    Pelicula garza = pelicula(backend, "El niño y la garza", "Un joven descubre un mundo fantástico guiado por una garza parlante.", 124, "Animación", "PG", "2023-12-07",
+        "https://image.tmdb.org/t/p/w500/f4oZTcfGrVTXKTWg157AwikXqmP.jpg");
         Cine centro = cine(backend, "Cine Colombia", "Cine Colombia Centro", "Calle 10 # 5-20");
         Cine multicentro = cine(backend, "Cinemark", "Cinemark Multicentro", "Carrera 5 # 60-45");
         Cine estacion = cine(backend, "Royal Films", "Royal Films La Estación", "Avenida Ambalá # 42-15");
@@ -60,12 +69,22 @@ public class CoreConfig {
         return backend;
     }
 
-    private Pelicula pelicula(CineMatchBackend backend, String titulo, String sinopsis, int duracion,
-                              String genero, String clasificacion, String estreno, String imagen) {
-        return backend.peliculas.crear(new Pelicula(titulo, sinopsis, duracion, genero, clasificacion,
-                "Español", LocalDate.parse(estreno), "https://placehold.co/600x900/9B1C31/FFFFFF?text=" + imagen));
-    }
 
+private Pelicula pelicula(CineMatchBackend backend, String titulo, String sinopsis, int duracion,
+                          String genero, String clasificacion, String estreno, String imagen) {
+    return backend.peliculas.crear(
+        new Pelicula(
+            titulo,
+            sinopsis,
+            duracion,
+            genero,
+            clasificacion,
+            "Español",
+            LocalDate.parse(estreno),
+            imagen
+        )
+    );
+}
     private Cine cine(CineMatchBackend backend, String cadena, String nombre, String direccion) {
         Cine cine = backend.cines.crearCine(new Cine(nombre, direccion, "Ibagué"));
         cine.setCadena(cadena);
