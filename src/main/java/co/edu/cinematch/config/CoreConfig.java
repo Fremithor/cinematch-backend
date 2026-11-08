@@ -10,11 +10,17 @@ import co.edu.cinematch.core.model.Pelicula;
 import co.edu.cinematch.core.model.Rol;
 import co.edu.cinematch.core.model.Sala;
 import co.edu.cinematch.core.model.Usuario;
+import co.edu.cinematch.core.model.Asiento;
+import co.edu.cinematch.core.model.Pago;
+import co.edu.cinematch.core.model.Reserva;
+import co.edu.cinematch.core.repository.MongoRepositoryAdapter;
+import co.edu.cinematch.core.repository.Repository;
 import co.edu.cinematch.core.service.FuncionService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Configuration
 public class CoreConfig {
@@ -27,8 +33,17 @@ public class CoreConfig {
     }
 
     @Bean
-    CineMatchBackend cineMatchBackend() {
-        CineMatchBackend backend = new CineMatchBackend();
+    CineMatchBackend cineMatchBackend(MongoTemplate mongo) {
+        Repository<Pelicula> peliculas = new MongoRepositoryAdapter<>(mongo, Pelicula.class, "peliculas");
+        Repository<Cine> cines = new MongoRepositoryAdapter<>(mongo, Cine.class, "cines");
+        Repository<Sala> salas = new MongoRepositoryAdapter<>(mongo, Sala.class, "salas");
+        Repository<Asiento> asientos = new MongoRepositoryAdapter<>(mongo, Asiento.class, "asientos");
+        Repository<Funcion> funciones = new MongoRepositoryAdapter<>(mongo, Funcion.class, "funciones");
+        Repository<Usuario> usuarios = new MongoRepositoryAdapter<>(mongo, Usuario.class, "usuarios");
+        Repository<Reserva> reservas = new MongoRepositoryAdapter<>(mongo, Reserva.class, "reservas");
+        Repository<Pago> pagos = new MongoRepositoryAdapter<>(mongo, Pago.class, "pagos");
+        CineMatchBackend backend = new CineMatchBackend(peliculas, cines, salas, asientos, funciones, usuarios, reservas, pagos);
+        if (!backend.peliculas.listar().isEmpty()) return backend;
         backend.auth.registrar(new Usuario("Administrador", "admin@cinematch.com", "admin123", "3000000000", Rol.ADMINISTRADOR));
 
         // Datos de demostración. Se crean al iniciar porque el proyecto usa

@@ -1,4 +1,27 @@
 package co.edu.cinematch.core;
-import co.edu.cinematch.core.model.*;import co.edu.cinematch.core.repository.*;import co.edu.cinematch.core.service.*;
-/** Composition root for REST or other adapters. All state stays in memory. */
-public final class CineMatchBackend {public final PeliculaService peliculas;public final CineService cines;public final FuncionService funciones;public final AuthService auth;public final ReservaService reservas;public final PagoService pagos;public CineMatchBackend(){Repository<Pelicula> pr=new InMemoryRepository<>();Repository<Cine> cr=new InMemoryRepository<>();Repository<Sala> sr=new InMemoryRepository<>();Repository<Asiento> ar=new InMemoryRepository<>();Repository<Funcion> fr=new InMemoryRepository<>();Repository<Usuario> ur=new InMemoryRepository<>();Repository<Reserva> rr=new InMemoryRepository<>();peliculas=new PeliculaService(pr);cines=new CineService(cr,sr,ar,fr);funciones=new FuncionService(fr,peliculas,cines);auth=new AuthService(ur);reservas=new ReservaService(rr,auth,funciones,cines);pagos=new PagoService(new InMemoryRepository<Pago>(),reservas);}}
+
+import co.edu.cinematch.core.model.*;
+import co.edu.cinematch.core.repository.*;
+import co.edu.cinematch.core.service.*;
+
+public final class CineMatchBackend {
+    public final PeliculaService peliculas;
+    public final CineService cines;
+    public final FuncionService funciones;
+    public final AuthService auth;
+    public final ReservaService reservas;
+    public final PagoService pagos;
+
+    public CineMatchBackend() {
+        this(new InMemoryRepository<>(), new InMemoryRepository<>(), new InMemoryRepository<>(), new InMemoryRepository<>(), new InMemoryRepository<>(), new InMemoryRepository<>(), new InMemoryRepository<>(), new InMemoryRepository<>());
+    }
+
+    public CineMatchBackend(Repository<Pelicula> peliculasRepo, Repository<Cine> cinesRepo, Repository<Sala> salasRepo, Repository<Asiento> asientosRepo, Repository<Funcion> funcionesRepo, Repository<Usuario> usuariosRepo, Repository<Reserva> reservasRepo, Repository<Pago> pagosRepo) {
+        peliculas = new PeliculaService(peliculasRepo);
+        cines = new CineService(cinesRepo, salasRepo, asientosRepo, funcionesRepo);
+        funciones = new FuncionService(funcionesRepo, peliculas, cines);
+        auth = new AuthService(usuariosRepo);
+        reservas = new ReservaService(reservasRepo, auth, funciones, cines);
+        pagos = new PagoService(pagosRepo, reservas);
+    }
+}

@@ -7,13 +7,15 @@ import co.edu.cinematch.core.model.Rol;
 import co.edu.cinematch.core.model.Usuario;
 import java.util.Map;
 import java.util.UUID;
+import co.edu.cinematch.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class AuthController {
     private final CineMatchBackend backend;
-    public AuthController(CineMatchBackend backend) { this.backend = backend; }
+    private final JwtService jwt;
+    public AuthController(CineMatchBackend backend, JwtService jwt) { this.backend = backend; this.jwt = jwt; }
 
     @PostMapping("/api/clientes/registro") @ResponseStatus(HttpStatus.CREATED)
     public Map<String, String> registrar(@RequestBody Map<String, String> datos) {
@@ -42,6 +44,6 @@ public class AuthController {
     }
     private String correo(Map<String, String> datos) { return datos.getOrDefault("correo", datos.get("email")); }
     private String clave(Map<String, String> datos) { return datos.getOrDefault("contrasena", datos.get("password")); }
-    private Map<String, String> sesion(Usuario u) { return Map.of("token", UUID.randomUUID().toString(), "nombre", u.getNombre(), "correo", u.getEmail(), "telefono", u.getTelefono(), "rol", u.getRol().name()); }
+    private Map<String, String> sesion(Usuario u) { return Map.of("token", jwt.crear(u.getEmail(), u.getRol().name()), "nombre", u.getNombre(), "correo", u.getEmail(), "telefono", u.getTelefono(), "rol", u.getRol().name()); }
 }
 
