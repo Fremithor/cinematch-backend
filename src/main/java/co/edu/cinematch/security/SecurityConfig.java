@@ -1,3 +1,37 @@
 package co.edu.cinematch.security;
-import org.springframework.context.annotation.*; import org.springframework.security.config.annotation.web.builders.HttpSecurity; import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity; import org.springframework.security.config.http.SessionCreationPolicy; import org.springframework.security.web.*; import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-@Configuration @EnableWebSecurity public class SecurityConfig { @Bean SecurityFilterChain chain(HttpSecurity h,JwtFilter f)throws Exception{return h.csrf(c->c.disable()).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(a->a.requestMatchers("/api/auth/login","/api/clientes/login","/api/clientes/registro","/api/pagos/webhook","/api/estado").permitAll().requestMatchers("GET","/api/peliculas/**","/api/cines/**","/api/funciones/**").permitAll().requestMatchers("POST","/api/peliculas/**","/api/cines/**","/api/funciones/**").hasRole("ADMINISTRADOR").requestMatchers("PUT","/api/peliculas/**","/api/cines/**","/api/funciones/**").hasRole("ADMINISTRADOR").requestMatchers("DELETE","/api/peliculas/**","/api/cines/**","/api/funciones/**").hasRole("ADMINISTRADOR").anyRequest().authenticated()).addFilterBefore(f,UsernamePasswordAuthenticationFilter.class).build();}}
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    SecurityFilterChain chain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
+        return http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/api/auth/login", "/api/clientes/login", "/api/clientes/registro",
+                                "/api/pagos/webhook", "/api/estado")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/peliculas/**", "/api/cines/**", "/api/funciones/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/peliculas/**", "/api/cines/**", "/api/funciones/**")
+                        .hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/peliculas/**", "/api/cines/**", "/api/funciones/**")
+                        .hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/peliculas/**", "/api/cines/**", "/api/funciones/**")
+                        .hasRole("ADMINISTRADOR")
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+}
