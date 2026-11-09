@@ -3,6 +3,7 @@ package co.edu.cinematch.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +18,9 @@ public class SecurityConfig {
     SecurityFilterChain chain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                // Permite que los dos frontends locales pasen la solicitud CORS
+                // antes de validar el token JWT.
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/api/auth/login", "/api/clientes/login", "/api/clientes/registro",
