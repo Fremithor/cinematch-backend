@@ -15,7 +15,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CineMatchBackendTest {
 
@@ -82,6 +85,35 @@ class CineMatchBackendTest {
         assertThrows(ValidationException.class, () -> backend.funciones.crear(
                 new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
                         LocalDate.now(), LocalTime.of(14, 30), LocalTime.of(15, 30), 20_000, "2D")));
+    }
+
+    @Test
+    void reutilizaLosAsientosEnOtraFuncionDeLaMismaSala() {
+        CineMatchBackend backend = new CineMatchBackend();
+        Usuario cliente = backend.auth.registrar(
+                new Usuario("Ana", "ana@cine.com", "Clave123", "3001234567", Rol.CLIENTE));
+        Pelicula pelicula = backend.peliculas.crear(
+                new Pelicula("Película", "Sinopsis", 120, "Drama", "PG", "Español", LocalDate.now(), "https://example.com/pelicula.jpg"));
+        Cine cine = crearCine(backend);
+        Sala sala = backend.cines.crearSala(cine.getId(), new Sala(null, "Sala 1", 5, "2D"));
+        Funcion primera = backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
+                LocalDate.now(), LocalTime.of(10, 0), LocalTime.of(12, 15), 20_000, "2D"));
+        Funcion segunda = backend.funciones.crear(new Funcion(pelicula.getId(), sala.getId(), "DOBLADA",
+                LocalDate.now(), LocalTime.of(12, 15), LocalTime.of(14, 30), 20_000, "2D"));
+        String asientoId = backend.cines.listarAsientos(sala.getId()).get(0).getId();
+
+        Reserva primeraReserva = backend.reservas.crear(cliente.getId(), primera.getId());
+        backend.reservas.agregarAsiento(primeraReserva.getId(), asientoId);
+
+        assertTrue(backend.reservas.asientosParaFuncion(primera.getId()).get(0).isOcupado());
+        assertFalse(backend.reservas.asientosParaFuncion(segunda.getId()).get(0).isOcupado());
+        assertThrows(ValidationException.class,
+                () -> backend.reservas.agregarAsiento(primeraReserva.getId(), asientoId));
+
+        Reserva segundaReserva = backend.reservas.crear(cliente.getId(), segunda.getId());
+        assertDoesNotThrow(() -> backend.reservas.agregarAsiento(segundaReserva.getId(), asientoId));
+        assertTrue(backend.reservas.asientosParaFuncion(primera.getId()).get(0).isOcupado());
+        assertTrue(backend.reservas.asientosParaFuncion(segunda.getId()).get(0).isOcupado());
     }
 
     private Cine crearCine(CineMatchBackend backend) {

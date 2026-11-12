@@ -20,8 +20,7 @@ public class ReservaController {
 
     @GetMapping("/funciones/{id}/asientos")
     public List<Asiento> asientos(@PathVariable String id) {
-        var funcion = backend.funciones.buscar(id);
-        return backend.cines.listarAsientos(funcion.getSalaId());
+        return backend.reservas.asientosParaFuncion(id);
     }
 
     @PostMapping("/reservas") @ResponseStatus(HttpStatus.CREATED)

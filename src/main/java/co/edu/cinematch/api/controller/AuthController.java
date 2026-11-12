@@ -35,7 +35,11 @@ public class AuthController {
         Usuario usuario = buscarCorreo(correo(datos));
         if (!usuario.getPassword().equals(datos.get("contrasenaActual"))) throw new AuthenticationException("La contraseña actual no es correcta.");
         String nueva = datos.get("contrasenaNueva");
-        return sesion(backend.auth.actualizarPerfil(usuario.getId(), datos.get("nombre"), datos.get("telefono"), nueva == null || nueva.isBlank() ? usuario.getPassword() : nueva));
+        // El perfil de administración no edita el teléfono. Si el cliente no
+        // lo envía, se conserva el valor que ya tiene registrada la cuenta.
+        String telefono = datos.getOrDefault("telefono", usuario.getTelefono());
+        return sesion(backend.auth.actualizarPerfil(usuario.getId(), datos.get("nombre"), telefono,
+                nueva == null || nueva.isBlank() ? usuario.getPassword() : nueva));
     }
     private Usuario buscarCorreo(String correo) { return backend.auth.listar().stream().filter(u -> u.getEmail().equalsIgnoreCase(correo)).findFirst().orElseThrow(() -> new ResourceNotFoundException("Usuario", correo)); }
     private Usuario exigirRol(Usuario usuario, Rol rol) {

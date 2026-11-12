@@ -3,7 +3,6 @@ package co.edu.cinematch.core.service;
 import co.edu.cinematch.core.exception.ResourceNotFoundException;
 import co.edu.cinematch.core.exception.ValidationException;
 import co.edu.cinematch.core.model.Asiento;
-import co.edu.cinematch.core.model.DetalleReserva;
 import co.edu.cinematch.core.model.EstadoReserva;
 import co.edu.cinematch.core.model.Funcion;
 import co.edu.cinematch.core.model.Reserva;
@@ -50,11 +49,10 @@ public class ReservaService {
         if (!funcion.getSalaId().equals(asiento.getSalaId())) {
             throw new ValidationException("El asiento no pertenece a la sala de la función.");
         }
-        if (asiento.isOcupado()) {
+        if (asientoYaReservado(funcion.getId(), asiento.getId())) {
             throw new ValidationException("El asiento no está disponible.");
         }
 
-        asiento.setOcupado(true);
         reserva.agregarDetalle(asiento.getId(), funcion.getPrecio());
         return repo.save(reserva);
     }
@@ -67,11 +65,26 @@ public class ReservaService {
 
     public Reserva cancelar(String id) {
         Reserva reserva = buscar(id);
-        for (DetalleReserva detalle : reserva.getDetalles()) {
-            cines.buscarAsiento(detalle.getAsientoId()).setOcupado(false);
-        }
         reserva.setEstado(EstadoReserva.CANCELADA);
         return repo.save(reserva);
+    }
+
+    /**
+     * Los asientos describen la distribución física de una sala. La
+     * disponibilidad, en cambio, depende de cada función: una reserva de las
+     * 3:00 p. m. no puede bloquear el mismo asiento para la función de las
+     * 6:00 p. m. aunque ambas usen la misma sala.
+     */
+    public List<Asiento> asientosParaFuncion(String funcionId) {
+        Funcion funcion = funciones.buscar(funcionId);
+        List<Asiento> resultado = new ArrayList<>();
+        for (Asiento asiento : cines.listarAsientos(funcion.getSalaId())) {
+            Asiento vista = new Asiento(asiento.getSalaId(), asiento.getFila(), asiento.getNumero());
+            vista.setId(asiento.getId());
+            vista.setOcupado(asientoYaReservado(funcionId, asiento.getId()));
+            resultado.add(vista);
+        }
+        return resultado;
     }
 
     public Reserva buscar(String id) {
@@ -92,5 +105,19 @@ public class ReservaService {
             }
         }
         return resultado;
+    }
+
+    private boolean asientoYaReservado(String funcionId, String asientoId) {
+        for (Reserva otraReserva : repo.findAll()) {
+            if (!funcionId.equals(otraReserva.getFuncionId())
+                    || otraReserva.getEstado() == EstadoReserva.CANCELADA) {
+                continue;
+            }
+            if (otraReserva.getDetalles().stream()
+                    .anyMatch(detalle -> asientoId.equals(detalle.getAsientoId()))) {
+                return true;
+            }
+        }
+        return false;
     }
 }
