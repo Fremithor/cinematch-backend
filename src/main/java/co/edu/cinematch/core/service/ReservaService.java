@@ -63,6 +63,13 @@ public class ReservaService {
         return repo.save(reserva);
     }
 
+    /** Marca como pagada una reserva que el microservicio de pagos aprobó. */
+    public Reserva marcarPagada(String id) {
+        Reserva reserva = buscar(id);
+        reserva.setEstado(EstadoReserva.PAGADA);
+        return repo.save(reserva);
+    }
+
     public Reserva cancelar(String id) {
         Reserva reserva = buscar(id);
         reserva.setEstado(EstadoReserva.CANCELADA);

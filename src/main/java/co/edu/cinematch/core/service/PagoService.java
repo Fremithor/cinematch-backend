@@ -39,10 +39,15 @@ public class PagoService {
             throw new ValidationException("El monto confirmado no coincide con el total de la reserva.");
         }
         for (Pago existente : repo.findAll()) {
-            if (reservaId.equals(existente.getReservaId())) return existente;
+            if (reservaId.equals(existente.getReservaId())) {
+                if ("APROBADO".equalsIgnoreCase(existente.getEstado())) {
+                    reservas.marcarPagada(reservaId);
+                }
+                return existente;
+            }
         }
         Pago pago = new Pago(reservaId, metodoPago, monto, LocalDateTime.now(), estado);
-        if ("APROBADO".equalsIgnoreCase(estado)) reserva.setEstado(EstadoReserva.PAGADA);
+        if ("APROBADO".equalsIgnoreCase(estado)) reservas.marcarPagada(reservaId);
         return repo.save(pago);
     }
 
