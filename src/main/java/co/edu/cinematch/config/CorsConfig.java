@@ -11,9 +11,14 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 // 5173 = portal de clientes (React + Vite)
                 // 4200 = panel de administración (Angular)
-                .allowedOrigins(
-                        "http://localhost:5173", "http://127.0.0.1:5173",
-                        "http://localhost:4200", "http://127.0.0.1:4200")
+                // Durante desarrollo se aceptan los dos frontends desde el
+                // mismo equipo y desde una red local privada.
+                .allowedOriginPatterns(
+                        "http://localhost:*", "http://127.0.0.1:*",
+                        "http://192.168.*.*:*", "http://10.*.*.*:*",
+                        "http://172.16.*.*:*", "http://172.17.*.*:*",
+                        "http://172.18.*.*:*", "http://172.19.*.*:*",
+                        "http://172.2*.*.*:*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Content-Type", "Authorization");
     }
