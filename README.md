@@ -26,6 +26,7 @@ El sistema está dividido en tres componentes independientes:
 * **Autenticación:** registro e inicio de sesión para clientes y acceso administrativo.
 * **Gestión de perfiles:** actualización de la información de clientes y administradores.
 * **Integración de pagos:** comunicación HTTP con el microservicio Django y recepción de confirmaciones mediante webhook.
+* **Documentación interactiva:** Swagger UI para explorar y probar la API REST.
 * **Validaciones de negocio:** control de duplicados, disponibilidad de asientos, conflictos de horarios y montos de pago.
 
 ## Tecnologías utilizadas
@@ -196,7 +197,15 @@ Una vez iniciado, el backend estará disponible en:
 
 `http://localhost:8081`
 
-Puedes probar los endpoints con Postman, Insomnia o cualquier cliente HTTP.
+La documentación y pruebas interactivas están disponibles en:
+
+`http://localhost:8081/swagger-ui.html`
+
+La especificación OpenAPI en JSON está disponible en:
+
+`http://localhost:8081/v3/api-docs`
+
+Puedes usar el botón **Authorize** de Swagger UI para pegar un JWT obtenido al iniciar sesión y probar las rutas protegidas.
 
 ### 4. Ejecutar el sistema completo
 
@@ -210,9 +219,9 @@ Para probar todas las funcionalidades, inicia los componentes en este orden:
 
 ## Almacenamiento de datos
 
-En la versión actual, los repositorios utilizan almacenamiento en memoria. Esto permite ejecutar y demostrar las funcionalidades sin configurar una base de datos externa.
+La aplicación usa MongoDB Atlas mediante `MongoTemplate` y adaptadores de repositorio. Películas, cines, salas, funciones, usuarios, reservas y pagos se guardan en colecciones reales y permanecen después de reiniciar la aplicación.
 
-Por este motivo, los datos almacenados pueden perderse cuando se reinicia la aplicación. El patrón Repository facilita una futura migración a una solución de persistencia permanente.
+Para ejecutar una copia local, crea un archivo ignorado llamado `atlas-credentials.properties` junto a `pom.xml` con `MONGODB_URI` y `JWT_SECRET`; ese archivo nunca debe subirse a GitHub.
 
 ## Manejo de errores y disponibilidad
 
